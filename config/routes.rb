@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  post '/rate' => 'rater#create', :as => 'rate'
+  mount Ckeditor::Engine => '/ckeditor'
   devise_for :users, controllers: {
     registrations: "registrations",
     omniauth_callbacks: "omniauth_callbacks"
@@ -11,12 +13,15 @@ Rails.application.routes.draw do
     resources :requests, except: [:show, :edit, :update]
   end
   resources :follows, only: [:create, :destroy]
-  resources :activities, only: :index do
-    resources :likes, only: [:create, :destroy]
-  end
+  resources :activities
   resources :categories, only: [:show, :index]
-  resources :books, only: [:show, :index]
-  resources :reviews
+  resources :books, only: [:show, :index] do
+    resources :reviews
+  end
+  resources :reviews, only: :show do
+    resources :likes, only: [:create, :destroy]
+    resources :comments, only: [:new, :create, :destroy, :edit, :update]
+  end
   resources :marks, only: :update
   resources :feed_backs, only: [:new, :create]
 
@@ -24,6 +29,7 @@ Rails.application.routes.draw do
     root to: "books#index", as: :root
     resources :categories
     resources :books
-    resources :users
+    resources :users, only: [:index, :show, :destroy]
+    resources :requests, only: [:index, :update]
   end
 end
